@@ -1,0 +1,52 @@
+[
+  {
+    "id": "trem",
+    "keywords": [
+      "trem",
+      "locomotiva",
+      "vagão",
+      "trilhos",
+      "estação"
+    ],
+    "audioFile": "trem.mp3",
+    "cooldownSeconds": 5
+  },
+  {
+    "id": "espada",
+    "keywords": [
+      "espada",
+      "espadas",
+      "lutando",
+      "espadada",
+      "duelo",
+      "combate"
+    ],
+    "audioFile": "espada.mp3",
+    "cooldownSeconds": 3
+  },
+  {
+    "id": "chuva",
+    "keywords": [
+      "chuva",
+      "chovendo",
+      "tempestade",
+      "pingo",
+      "temporal",
+      "trovão"
+    ],
+    "audioFile": "chuva.mp3",
+    "cooldownSeconds": 10
+  },
+  {
+    "id": "monstro",
+    "keywords": [
+      "monstro",
+      "dragão",
+      "rugido",
+      "gigante",
+      "festa"
+    ],
+    "audioFile": "monstro.mp3",
+    "cooldownSeconds": 5
+  }
+]

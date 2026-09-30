@@ -1,0 +1,60 @@
+name: soundkid
+description: "App de efeitos sonoros reativos por voz para contação de histórias"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Biblioteca para reconhecimento de fala em tempo real (Speech-to-Text)
+  speech_to_text: ^7.0.0
+
+  # Biblioteca para reprodução de efeitos sonoros
+  audioplayers: ^5.2.1
+
+  # Gerenciamento de permissões do sistema (Microfone)
+  permission_handler: ^11.0.1
+
+  path_provider: ^2.1.2   # Para encontrar a pasta de documentos do celular
+  file_picker: ^8.0.0 # Para abrir o seletor de arquivos do dispositivo
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+  # Geradores automáticos de Ícone e Splash Screen
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/audio/
+    - assets/config/sounds_config.json
+    - assets/images/
+    - assets/audio/
+    - assets/config/sounds_config.json
+
+    # Configuração do Ícone do App
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  min_sdk_android: 21
+
+# Configuração da Tela de Abertura (Splash Screen)
+flutter_native_splash:
+  color: "#131429"
+  background_image: assets/images/splash_logo.png
+  
+  # Para Android 12+
+  android_12:
+    color: "#131429"
+    background_image: assets/images/splash_logo.png
