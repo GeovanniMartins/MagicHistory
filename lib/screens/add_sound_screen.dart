@@ -142,20 +142,24 @@ class _AddSoundScreenState extends State<AddSoundScreen> {
           _recordedPath = null;
         });
       } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Permissão de microfone não concedida.'),
+              backgroundColor: accentPink,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Permissão de microfone não concedida.'),
-            backgroundColor: accentPink,
+          SnackBar(
+            content: Text('Erro ao iniciar gravação: $e'),
+            backgroundColor: Colors.red,
           ),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao iniciar gravação: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
@@ -173,12 +177,14 @@ class _AddSoundScreenState extends State<AddSoundScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao parar gravação: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao parar gravação: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -210,12 +216,14 @@ class _AddSoundScreenState extends State<AddSoundScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao reproduzir áudio: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao reproduzir áudio: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
