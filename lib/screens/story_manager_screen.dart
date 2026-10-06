@@ -132,7 +132,7 @@ class _StoryManagerScreenState extends State<StoryManagerScreen> {
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String?>(
-                    value: selectedAmbientId,
+                    initialValue: selectedAmbientId,
                     dropdownColor: cardColor,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
@@ -217,6 +217,8 @@ class _StoryManagerScreenState extends State<StoryManagerScreen> {
                       final title = titleController.text.trim();
                       if (title.isEmpty) return;
 
+                      final navigator = Navigator.of(ctx);
+
                       final newStory = Story(
                         id: storyToEdit?.id ??
                             'story_${DateTime.now().millisecondsSinceEpoch}',
@@ -229,17 +231,19 @@ class _StoryManagerScreenState extends State<StoryManagerScreen> {
                       );
 
                       final saved = await _supabaseService.saveStory(newStory);
-                      setState(() {
-                        final idx =
-                            _stories.indexWhere((s) => s.id == saved.id);
-                        if (idx >= 0) {
-                          _stories[idx] = saved;
-                        } else {
-                          _stories.insert(0, saved);
-                        }
-                      });
-                      widget.onStoriesUpdated(_stories);
-                      if (mounted) Navigator.pop(ctx);
+                      if (mounted) {
+                        setState(() {
+                          final idx =
+                              _stories.indexWhere((s) => s.id == saved.id);
+                          if (idx >= 0) {
+                            _stories[idx] = saved;
+                          } else {
+                            _stories.insert(0, saved);
+                          }
+                        });
+                        widget.onStoriesUpdated(_stories);
+                        navigator.pop();
+                      }
                     },
                     child: const Text('Salvar História',
                         style: TextStyle(

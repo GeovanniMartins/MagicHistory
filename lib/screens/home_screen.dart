@@ -188,6 +188,16 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _openAddSoundScreen({SoundEffect? soundToEdit}) async {
+    final wasListening = _isListening;
+    if (_isListening) {
+      await _speechService.stopListening();
+      if (mounted) {
+        setState(() => _isListening = false);
+      }
+    }
+
+    if (!mounted) return;
+
     final result = await Navigator.push<SoundEffect>(
       context,
       MaterialPageRoute(
@@ -204,6 +214,10 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         );
       }
+    }
+
+    if (wasListening && mounted) {
+      _toggleListening();
     }
   }
 
@@ -234,56 +248,60 @@ class _HomeScreenState extends State<HomeScreen>
     double tempVol = effect.volume;
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setVolState) => AlertDialog(
-          backgroundColor: cardColor,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Volume de "${effect.name}"',
-              style: const TextStyle(color: Colors.white, fontSize: 16)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${(tempVol * 100).toInt()}%',
-                  style: const TextStyle(
-                      color: accentCyan,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold)),
-              Slider(
-                value: tempVol,
-                min: 0.0,
-                max: 1.0,
-                activeColor: accentCyan,
-                onChanged: (v) {
-                  setVolState(() => tempVol = v);
+      builder: (ctx) {
+        final navigator = Navigator.of(ctx);
+        return StatefulBuilder(
+          builder: (context, setVolState) => AlertDialog(
+            backgroundColor: cardColor,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text('Volume de "${effect.name}"',
+                style: const TextStyle(color: Colors.white, fontSize: 16)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('${(tempVol * 100).toInt()}%',
+                    style: const TextStyle(
+                        color: accentCyan,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold)),
+                Slider(
+                  value: tempVol,
+                  min: 0.0,
+                  max: 1.0,
+                  activeColor: accentCyan,
+                  onChanged: (v) {
+                    setVolState(() => tempVol = v);
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => navigator.pop(),
+                child:
+                    const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: accentPurple),
+                onPressed: () async {
+                  final updated = effect.copyWith(volume: tempVol);
+                  await _supabaseService.saveSoundEffect(updated);
+                  await _loadData();
+                  navigator.pop();
                 },
+                child:
+                    const Text('Salvar', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child:
-                  const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: accentPurple),
-              onPressed: () async {
-                final updated = effect.copyWith(volume: tempVol);
-                await _supabaseService.saveSoundEffect(updated);
-                await _loadData();
-                if (mounted) Navigator.pop(ctx);
-              },
-              child:
-                  const Text('Salvar', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 
   void _associateVideoDirectly(SoundEffect effect) async {
+    final messenger = ScaffoldMessenger.of(context);
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['mp4', 'webm', 'mov'],
@@ -304,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen>
       await _loadData();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
               content: Text('Vídeo associado a "${effect.name}"!'),
               backgroundColor: accentPurple),
@@ -353,6 +371,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void dispose() {
+    _speechService.stopListening();
     _audioService.dispose();
     super.dispose();
   }
@@ -411,13 +430,14 @@ class _HomeScreenState extends State<HomeScreen>
                 color: accentPink, size: 28),
             tooltip: 'Parar Todos os Sons',
             onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
               await _audioService.stopAllSounds();
-              setState(() {
-                _wordsSpoken = '';
-                _lastTriggered = '';
-              });
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                setState(() {
+                  _wordsSpoken = '';
+                  _lastTriggered = '';
+                });
+                messenger.showSnackBar(
                   const SnackBar(
                     content: Text('Todos os sons foram parados.'),
                     duration: Duration(seconds: 1),

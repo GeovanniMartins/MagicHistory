@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../models/sound_effect.dart';
@@ -7,6 +8,8 @@ class SpeechService {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isAvailable = false;
   bool _isListeningExplicitly = false;
+  bool _isRestarting = false;
+  Timer? _restartTimer;
   Function(String words)? _onResultCallback;
   Function(String status)? onStatusChange;
   Function(String error)? onErrorOccurred;
@@ -45,8 +48,11 @@ class SpeechService {
   Future<bool> startListening({
     required Function(String words) onResult,
   }) async {
+    _restartTimer?.cancel();
+    _restartTimer = null;
     _onResultCallback = onResult;
     _isListeningExplicitly = true;
+    _isRestarting = false;
 
     if (!_isAvailable) {
       bool ready = await initialize();
@@ -68,6 +74,8 @@ class SpeechService {
           partialResults: true,
           cancelOnError: false,
           localeId: 'pt_BR',
+          listenFor: const Duration(hours: 1),
+          pauseFor: const Duration(seconds: 10),
         ),
       );
       return true;
@@ -79,8 +87,14 @@ class SpeechService {
   }
 
   void _restartListening() {
-    if (!_isListeningExplicitly || _onResultCallback == null) return;
-    Future.delayed(const Duration(milliseconds: 300), () async {
+    if (!_isListeningExplicitly || _onResultCallback == null || _isRestarting) {
+      return;
+    }
+
+    _isRestarting = true;
+    _restartTimer?.cancel();
+    _restartTimer = Timer(const Duration(milliseconds: 800), () async {
+      _isRestarting = false;
       if (_isListeningExplicitly && !_speech.isListening) {
         try {
           await _speech.listen(
@@ -94,6 +108,8 @@ class SpeechService {
               partialResults: true,
               cancelOnError: false,
               localeId: 'pt_BR',
+              listenFor: const Duration(hours: 1),
+              pauseFor: const Duration(seconds: 10),
             ),
           );
         } catch (e) {
@@ -105,6 +121,9 @@ class SpeechService {
 
   Future<void> stopListening() async {
     _isListeningExplicitly = false;
+    _isRestarting = false;
+    _restartTimer?.cancel();
+    _restartTimer = null;
     _onResultCallback = null;
     await _speech.stop();
   }
